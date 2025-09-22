@@ -1,4 +1,4 @@
-USE cine_patterns;
+USE MercadoBarrio;
 INSERT INTO products (sku,name,weight_grams,fragile) VALUES
 ('VEL-AROMA','Vela aromática', 300, 1),
 ('TE-VERDE','Té verde 250g', 250, 0),

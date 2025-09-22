@@ -1,15 +1,13 @@
 <?php
-// Estado del proyecto hasta el requerimiento: lógica directa sin patrones de diseño.
-// NOTA: el objetivo del taller es refactorizar este código para introducir patrones (creacional, estructural, comportamiento).
 
 function products_all(): array {
   return db()->query("SELECT * FROM products ORDER BY name ASC")->fetchAll();
-}
+} // No modificada
 
 function orders_latest(int $limit=5): array {
   $stmt = db()->query("SELECT * FROM orders ORDER BY id DESC LIMIT " . (int)$limit);
   return $stmt->fetchAll();
-}
+} // No modificada
 
 function order_with_items(int $id): ?array {
   $stmt = db()->prepare("SELECT * FROM orders WHERE id=?");
@@ -20,14 +18,14 @@ function order_with_items(int $id): ?array {
   $stmt->execute([$id]);
   $items = $stmt->fetchAll();
   return ['order'=>$order, 'items'=>$items];
-}
+} // No modificada
 
 function shipment_by_order(int $orderId): ?array {
   $stmt = db()->prepare("SELECT * FROM shipments WHERE order_id=? ORDER BY id DESC LIMIT 1");
   $stmt->execute([$orderId]);
   $r = $stmt->fetch();
   return $r ?: null;
-}
+} // No modificada
 
 function handle_create_order(array $input): int {
   $email = filter_var(trim((string)($input['customer_email'] ?? '')), FILTER_VALIDATE_EMAIL);
@@ -37,49 +35,41 @@ function handle_create_order(array $input): int {
   $items = $input['items'] ?? [];
 
   if (!$email) throw new RuntimeException('Email inválido');
-  if ($address === '') throw new RuntimeException('Dirección requerida');
+  if ($address==='') throw new RuntimeException('Dirección requerida');
 
-  // Resolver items y calcular peso total (lógica directa, ideal para aplicar Builder luego)
   $pdo = db();
   $pdo->beginTransaction();
   try {
-    $totalWeight = 0;
-    $resolved = [];
-    $stmt = $pdo->prepare("SELECT id, weight_grams FROM products WHERE id=?");
-    foreach ($items as $productId => $qty) {
-      $qty = (int)$qty;
-      if ($qty <= 0) continue;
-      $stmt->execute([$productId]);
-      $row = $stmt->fetch();
-      if (!$row) continue;
-      $totalWeight += ((int)$row['weight_grams'] * $qty);
-      $resolved[] = ['product_id'=>(int)$row['id'], 'quantity'=>$qty];
-    }
-    if (empty($resolved)) throw new RuntimeException('El pedido no tiene items válidos');
+    // PATRÓN DE DISEÑO BUILDER:
+    // Construcción de objeto Pedido.
+    $builder = new \App\Builder\OrderBuilder($pdo);
+    $orderData = $builder->build($email, $address, $priority, $fragility, $items);
 
-    // Insertar pedido
     $stmt = $pdo->prepare("INSERT INTO orders (customer_email,address,priority,fragility,total_weight) VALUES (?,?,?,?,?)");
-    $stmt->execute([$email, $address, $priority, $fragility, $totalWeight]);
+    $stmt->execute([$orderData['customer_email'],$orderData['address'],$orderData['priority'],$orderData['fragility'],$orderData['total_weight'],]);
     $orderId = (int)$pdo->lastInsertId();
-
-    // Insertar items
     $stmtItem = $pdo->prepare("INSERT INTO order_items (order_id,product_id,quantity) VALUES (?,?,?)");
-    foreach ($resolved as $it) {
+    foreach ($orderData['items'] as $it) {
       $stmtItem->execute([$orderId, $it['product_id'], $it['quantity']]);
     }
 
-    // Selección de proveedor con if/else (ideal para Strategy luego)
-    $provider = select_provider_naive($priority, $fragility, $totalWeight);
+    // PATRÓN DE DISEÑO STRATEGY:
+    // Selección del proveedor con reglas de negocio definidas en los requisitos
+    $selector = new \App\Strategy\DeliverySelector([new \App\Strategy\EcoBikeStrategy(),new \App\Strategy\MotoYAStrategy(),new \App\Strategy\PaqzStrategy(),]);
+    $strategy = $selector->select($orderData);
+    $provider = $strategy->getProviderName();
 
-    // Simulación de “integración” (ideal para Adapter luego)
-    $tracking = request_pickup_naive($provider, ['order_id'=>$orderId, 'weight'=>$totalWeight]);
-
-    // Registrar envío
+    // PATRÓN DE DISEÑO ADAPTER:
+    // Solicitar la recogida vía Adapter
+    // SIMULANDO QUE EN LA APLICACIÓN VERDADERA LOS DATOS VINIERAN
+    // POR MEDIO DE 3 APIs DISTINTAS
+    $adapter  = $strategy->getAdapter();
+    $tracking = $adapter->requestPickup(array_merge($orderData, ['order_id' => $orderId]));
     $stmt = $pdo->prepare("INSERT INTO shipments (order_id,provider,tracking_id,status) VALUES (?,?,?,?)");
     $stmt->execute([$orderId, $provider, $tracking, 'CONFIRMADO']);
 
-    // Notificación directa (ideal para Observer luego)
-    $msg = "Pedido #$orderId confirmado y asignado a $provider ($tracking)";
+    // Registro de notificaciones
+    $msg  = "Pedido #$orderId confirmado y asignado a $provider ($tracking)";
     $stmt = $pdo->prepare("INSERT INTO notifications (order_id,channel,message) VALUES (?,?,?)");
     $stmt->execute([$orderId,'email',$msg]);
     $stmt->execute([$orderId,'webhook',$msg]);
@@ -92,6 +82,8 @@ function handle_create_order(array $input): int {
   }
 }
 
+/* 
+LÓGICA ANTIGUA:
 function select_provider_naive(string $priority, string $fragility, int $totalWeight): string {
   if ($priority === 'express' && $fragility !== 'ninguna') {
     return 'ecobike';
@@ -112,3 +104,4 @@ function request_pickup_naive(string $provider, array $data): string {
     return 'PAQ-' . strtoupper(bin2hex(random_bytes(3)));
   }
 }
+*/

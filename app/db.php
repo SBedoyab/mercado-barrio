@@ -1,12 +1,13 @@
 <?php
-// Conexión PDO simple (sin patrones)
+require_once __DIR__ . '/Singleton/Database.php';
+
+use App\Singleton\Database;
+
+/**
+ * Devuelve una instancia única de PDO para la conexión a la base de datos.
+ *
+ * @return PDO
+ */
 function db(): PDO {
-  static $pdo = null;
-  if ($pdo) return $pdo;
-  $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
-  $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-  ]);
-  return $pdo;
+    return Database::getInstance();
 }
