@@ -3,8 +3,9 @@
   --card: #fff;
   --text: #111827;
   --muted: #6b7280;
-  --primary: #2563eb;
-  --primary-hover: #1e40af;
+  --primary: #669bbc;         /* Azul base solicitado */
+  --primary-hover: #517d96;   /* Hover más oscuro */
+  --secondary: #e5e7eb;
   --border: #e5e7eb;
   --radius: 14px;
 }
@@ -26,10 +27,11 @@ body {
   padding: 16px;
 }
 
+/* HEADER */
 .topbar {
-  background: #0b0f19;
+  background: var(--primary); /* Azul sólido */
   color: #fff;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .topbar .container {
@@ -37,32 +39,53 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 14px 16px;
 }
 
 .brand {
   color: #fff;
   text-decoration: none;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .nav {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
+.nav a {
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+}
+
+.nav a:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* BOTONES (base) */
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 12px 18px;
   border-radius: var(--radius);
   text-decoration: none;
   border: 1px solid var(--border);
-  background: #fff;
+  background: #fff;            /* default */
   color: var(--text);
   font-weight: 600;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+  transition: background 0.18s, color 0.18s, transform 0.12s;
+  min-width: 140px; /* mismo tamaño base */
+  box-sizing: border-box;
 }
 
 .btn:hover {
@@ -70,16 +93,59 @@ body {
   transform: translateY(-1px);
 }
 
+/* FORZAR estilo del botón "primario" (para <a> y <button>) */
+a.btn.primary,
+button.btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Hover y foco del primario */
+a.btn.primary:hover,
+button.btn.primary:hover {
+  background: var(--primary-hover);
+  color: #fff;
+}
+
+a.btn.primary:focus,
+button.btn.primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(102,155,188,0.18);
+}
+
+/* Si por alguna razón hay reglas aún más específicas, este selector final las supera sin usar !important */
 .btn.primary {
   background: var(--primary);
   color: #fff;
   border-color: var(--primary);
 }
 
-.btn.primary:hover {
-  background: var(--primary-hover);
+/* Cancelar (más suave que el primario) */
+.btn.cancel {
+  background: transparent;
+  border: 1px solid var(--secondary);
+  color: var(--muted);
+  font-weight: 500;
 }
 
+.btn.cancel:hover {
+  background: #f9fafb;
+  color: var(--text);
+}
+
+/* Éxito / despachar */
+.btn.success {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+
+.btn.success:hover {
+  background: #059669;
+}
+
+/* Tarjetas, listas y formularios (sin cambios funcionales importantes) */
 .card {
   background: var(--card);
   padding: 28px;
@@ -141,8 +207,8 @@ body {
 .chip {
   padding: 6px 12px;
   border-radius: 999px;
-  background: #e0e7ff;
-  color: #1e3a8a;
+  background: #dbeafe; /* tono claro acorde al nuevo primary */
+  color: var(--primary);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -192,7 +258,7 @@ input, select {
 input:focus, select:focus {
   border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 6px rgba(102,155,188,0.12);
 }
 
 .alert {

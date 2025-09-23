@@ -1,5 +1,5 @@
 <?php /** @var array $products */ $opts = ['ninguna','debil','alta']; ?>
-<h1 class="h">Confirmación de Pedido</h1>
+<h1 class="h">Confirmación de pedido</h1>
 <form method="post" action="?r=order/create" class="form">
   <input type="hidden" name="__action" value="order.store">
   <div class="grid2">
@@ -24,7 +24,6 @@
   <?php endforeach; ?>
   <div class="actions mt">
     <button class="btn primary">Confirmar y despachar</button>
-    <a class="btn" href="?r=home">Cancelar</a>
+    <a class="btn cancel" href="?r=home">Cancelar</a>
   </div>
 </form>
-<p class="note">Este flujo tiene if/else y funciones directas. El objetivo es **refactorizarlo** aplicando patrones.</p>

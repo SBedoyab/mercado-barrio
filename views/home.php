@@ -1,6 +1,5 @@
 <?php /** @var array $products */ /** @var array $recent */ ?>
-<h1 class="h">Módulo de Pedidos & Entregas (Starter)</h1>
-<p class="muted">Código base **sin patrones de diseño**. La tarea es refactorizar aplicando uno creacional, uno estructural y uno de comportamiento.</p>
+<h1 class="h">Módulo de pedidos y entregas</h1>
 
 <h2 class="hh">Productos</h2>
 <ul class="list">
@@ -23,4 +22,4 @@
   </ul>
 <?php endif; ?>
 
-<div class="actions mt"><a class="btn primary" href="?r=order/create">➕ Crear nuevo pedido</a></div>
+<div class="actions mt"><a class="btn primary" href="?r=order/create">Crear nuevo pedido</a></div>
